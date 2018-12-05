@@ -1,0 +1,54 @@
+body {
+	margin: 0px;
+	text-align: center;
+}
+
+#game {
+	height: 600px;
+	width: 1000px;
+	background: black;
+	display: inline-block;
+	position: relative;
+}
+
+#game-objects * {
+	position: absolute;
+}
+
+#menus {
+	display: inline-block;
+}
+
+.menu {
+	width: 200px;
+}
+
+.menu > div {
+	background: white;
+	padding: 10px;
+	margin: 5px;
+	border-radius: 5px;
+	text-align: center;
+}
+
+.menu > div.active {
+	animation: menu-active .5s linear 0 infinite alternate;
+}
+
+.menu > div.selected {
+	background: green;
+}
+
+.hide {
+	display: none;
+}
+
+@keyframes menu-active {
+	from { background-color: none; }
+	to { background-color: blue; }
+}
+
+@keyframes shallow-flash {
+	from { opacity: .5; }
+	to { opacity: .75; }
+}
