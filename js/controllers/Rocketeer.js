@@ -42,17 +42,7 @@ RocketeerController.prototype.readGamepads = function() {
 	var gp = gps[0];
 	this.processAxes(gp);
 	this.processButtons(gp);
-	// for (var i in this.hiddenHeroes.players) {
-	// 	var player = this.hiddenHeroes.players[i];
-	// 	if (player.gi >= 0) {
-	// 		var gp = gps[player.gi];
-	// 		if (gp) {
-	// 			var pi = player.i;
-	// 			this.processButtons(i, pi, gp);
-	// 			if (View.prototype.getElement('#player-' + player.i + '-playable-select-menu .hide')) this.processAxes(i, pi, gp);
-	// 		}
-	// 	}
-	// }
+	if (this.state == 'playing') this.update();
 };
 
 RocketeerController.prototype.processAxes = function(gp) {
@@ -90,7 +80,6 @@ RocketeerController.prototype.processButtons = function(gp) {
 		i = Number(i);
 		if (gp.buttons[i].pressed) this.buttonProcessor(i);
 	}
-	for (var i in this.gpInputs[0].buttons) this.gpInputs[0].buttons[i] = 0;
 };
 
 RocketeerController.prototype.moveHorizontal = function(d) {
@@ -131,6 +120,7 @@ RocketeerController.prototype.endMainMenu = function() {
 	// console.log('endMainMenu');
 	this.view.addClassName(this.mainMenu, 'hide');
 	this.buttonProcessor = this.playingButtonProcessor;
+	this.state = 'playing';
 };
 
 RocketeerController.prototype.playingButtonProcessor = function(i) {
@@ -138,10 +128,10 @@ RocketeerController.prototype.playingButtonProcessor = function(i) {
 	if (!this.processButton(i)) return;
 	switch (i) {
 	case 9: this.pause(); break;
-	case 0: console.log(1); break;
-	case 1: console.log(2); break;
-	case 2: console.log(3); break;
-	case 3: console.log(4); break;
+	case 0: console.log('smart bomb'); break;
+	case 1: console.log('laser'); break;
+	case 2: console.log(''); break;
+	case 3: console.log('bomb'); break;
 	case 4:
 	case 5:
 		console.log('tractor beam'); break;
@@ -162,6 +152,7 @@ RocketeerController.prototype.processButton = function(i) {
 		if (this.gpInputs[0].buttons[i] == 0) ret = true;
 		this.gpInputs[0].buttons[i]++;
 	}
+	if (ret) console.log(this.gpInputs[0].buttons[i]);
 	return ret;
 };
 
@@ -179,7 +170,12 @@ RocketeerController.prototype.pause = function() {
 
 RocketeerController.prototype.pauseMenuButtonProcessor = function(i) {
 	// console.log('pauseMenuButtonProcessor');
-	if (i == 8) this.endPause();
+	if (i == 8) {
+		switch(this.activeOption) {
+		case 0: this.endPause(); break;
+		case 1: this.endGame(); break;
+		}
+	}
 };
 
 RocketeerController.prototype.endPause = function() {
@@ -187,4 +183,13 @@ RocketeerController.prototype.endPause = function() {
 	this.view.addClassName(this.pauseMenu, 'hide');
 	this.state = 'playing';
 	this.buttonProcessor = this.playingButtonProcessor;
+};
+
+RocketeerController.prototype.endGame = function() {
+	// console.log('endGame');
+	this.state = 'main-menu';
+};
+
+RocketeerController.prototype.update = function() {
+	console.log('update');
 };
