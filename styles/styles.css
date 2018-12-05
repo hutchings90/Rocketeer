@@ -32,7 +32,7 @@ body {
 }
 
 .menu > div.active {
-	animation: menu-active .5s linear 0 infinite alternate;
+	animation: menu-active .5s linear 0s infinite alternate;
 }
 
 .menu > div.selected {
@@ -44,8 +44,8 @@ body {
 }
 
 @keyframes menu-active {
-	from { background-color: none; }
-	to { background-color: blue; }
+	from { background-color: blue; }
+	to { background-color: white; }
 }
 
 @keyframes shallow-flash {
