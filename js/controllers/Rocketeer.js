@@ -12,6 +12,7 @@ function RocketeerController() {
 	this.buttonPressedMax = 16;
 	this.buttonPressedMin = 8;
 	this.start();
+	this.cm = new ContentManager();
 }
 
 RocketeerController.prototype.start = function() {
@@ -122,7 +123,7 @@ RocketeerController.prototype.endMainMenu = function() {
 	// console.log('endMainMenu');
 	this.view.addClassName(this.mainMenu, 'hide');
 	this.startPlaying();
-}
+};
 
 RocketeerController.prototype.startPlaying = function() {
 	this.buttonProcessor = this.playingButtonProcessor;
