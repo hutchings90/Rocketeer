@@ -40,7 +40,7 @@ RocketeerController.prototype.deactivateGamepadRead = function() {
 RocketeerController.prototype.readGamepads = function() {
 	// console.log('readGamepads');
 	var gps = navigator.getGamepads();
-	if (gps.length < 1) return;
+	if (!gps[0]) return;
 	var gp = gps[0];
 	this.processAxes(gp);
 	this.processButtons(gp);
