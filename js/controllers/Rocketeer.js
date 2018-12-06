@@ -9,6 +9,8 @@ function RocketeerController() {
 	this.pauseMenu = this.view.getElement('#pause-menu');
 	this.activeOption = 0;
 	this.buttonProcessor = this.mainMenuButtonProcessor;
+	this.buttonPressedMax = 16;
+	this.buttonPressedMin = 8;
 	this.start();
 }
 
@@ -119,8 +121,14 @@ RocketeerController.prototype.mainMenuButtonProcessor = function(i) {
 RocketeerController.prototype.endMainMenu = function() {
 	// console.log('endMainMenu');
 	this.view.addClassName(this.mainMenu, 'hide');
+	this.startPlaying();
+}
+
+RocketeerController.prototype.startPlaying = function() {
 	this.buttonProcessor = this.playingButtonProcessor;
 	this.state = 'playing';
+	this.buttonPressedMax = 16;
+	this.buttonPressedMin = 1;
 };
 
 RocketeerController.prototype.playingButtonProcessor = function(i) {
@@ -128,10 +136,10 @@ RocketeerController.prototype.playingButtonProcessor = function(i) {
 	if (!this.processButton(i)) return;
 	switch (i) {
 	case 9: this.pause(); break;
-	case 0: console.log('smart bomb'); break;
+	case 0: console.log('smart bomb'); break; // Explodes when button released, on contact, and at end of screen.
 	case 1: console.log('laser'); break;
-	case 2: console.log(''); break;
-	case 3: console.log('bomb'); break;
+	case 2: console.log('discharge'); break; // Damage depends on shield strength. Depletes shield.
+	case 3: console.log('bomb'); break; // Explodes on contact.
 	case 4:
 	case 5:
 		console.log('tractor beam'); break;
@@ -144,15 +152,14 @@ RocketeerController.prototype.playingButtonProcessor = function(i) {
 RocketeerController.prototype.processButton = function(i) {
 	// console.log('processButton');
 	var ret = false;
-	if (this.gpInputs[0].buttons[i] == 16) {
-		this.gpInputs[0].buttons[i] = 8;
+	if (this.gpInputs[0].buttons[i] == this.buttonPressedMax) {
+		this.gpInputs[0].buttons[i] = this.buttonPressedMin;
 		ret = true;
 	}
 	else {
 		if (this.gpInputs[0].buttons[i] == 0) ret = true;
 		this.gpInputs[0].buttons[i]++;
 	}
-	if (ret) console.log(this.gpInputs[0].buttons[i]);
 	return ret;
 };
 
@@ -160,6 +167,8 @@ RocketeerController.prototype.pause = function() {
 	// console.log('pause');
 	this.state = 'pause-menu';
 	this.buttonProcessor = this.pauseMenuButtonProcessor
+	this.buttonPressedMax = 16;
+	this.buttonPressedMin = 0;
 	this.view.removeClassName(this.pauseMenu, 'hide');
 	this.activeOption = 0;
 	this.view.addClassName(this.pauseMenu.children[0], 'active');
@@ -181,15 +190,22 @@ RocketeerController.prototype.pauseMenuButtonProcessor = function(i) {
 RocketeerController.prototype.endPause = function() {
 	// console.log('endPause');
 	this.view.addClassName(this.pauseMenu, 'hide');
-	this.state = 'playing';
-	this.buttonProcessor = this.playingButtonProcessor;
+	this.startPlaying();
 };
 
 RocketeerController.prototype.endGame = function() {
 	// console.log('endGame');
-	this.state = 'main-menu';
+	var me = this;
+	me.buttonProcessor = function() {};
+	me.state = 'main-menu';
+	me.activeOption = 0;
+	me.view.addClassName(me.pauseMenu, 'hide');
+	me.view.removeClassName(me.mainMenu, 'hide');
+	setTimeout(function() {
+		me.buttonProcessor = me.mainMenuButtonProcessor;
+	}, 200);
 };
 
 RocketeerController.prototype.update = function() {
-	console.log('update');
+	// console.log('update');
 };
