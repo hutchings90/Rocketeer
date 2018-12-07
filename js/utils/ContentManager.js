@@ -1,38 +1,4 @@
-function ContentManager() {
-	// console.log('ContentManager');
-	this.view = View.prototype;
-	this.setPaths();
-	this.loadImages();
-	this.loadSounds();
-}
-
-ContentManager.prototype.setPaths = function() {
-	this.BASE_PATH = 'assets/';
-	this.IMAGE_PATH = this.BASE_PATH + 'images/';
-	this.SOUND_PATH = this.BASE_PATH + 'sounds/';
-};
-
-ContentManager.prototype.loadImages = function() {
-	// console.log('loadImages');
-	this.images = {
-		bombUp: this.makeImage('bombUp.png'),
-		laserUp: this.makeImage('laserUp.png'),
-		shieldUp: this.makeImage('shieldUp.png'),
-		dischargeUp: this.makeImage('dischargeUp.png'),
-		smartBombUp: this.makeImage('smartBombUp.png'),
-		tractorBeamUp: this.makeImage('tractorBeamUp.png'),
-		ship00: this.makeImage('ship00.png'),
-		ship01: this.makeImage('ship01.png'),
-		ship02: this.makeImage('ship02.png'),
-		ship03: this.makeImage('ship03.png'),
-		laser01: this.makeImage('laser01.png')
-	};
-};
-
-ContentManager.prototype.loadSounds = function() {
-	// console.log('loadSounds');
-	this.sounds = {};
-};
+function ContentManager() {}
 
 ContentManager.prototype.getImage = function(key) {
 	// console.log('getImage');
@@ -51,7 +17,25 @@ ContentManager.prototype.getAsset = function(type, key) {
 };
 
 ContentManager.prototype.makeImage = function(file) {
-	var e = this.view.makeElement('img');
+	var e = View.prototype.makeElement('img');
 	e.src = this.IMAGE_PATH + file;
 	return e;
 };
+
+ContentManager.prototype.BASE_PATH = 'assets/';
+ContentManager.prototype.IMAGE_PATH = ContentManager.prototype.BASE_PATH + 'images/';
+ContentManager.prototype.SOUND_PATH = ContentManager.prototype.BASE_PATH + 'sounds/';
+ContentManager.prototype.images = {
+	bombUp: ContentManager.prototype.makeImage('bombUp.png'),
+	laserUp: ContentManager.prototype.makeImage('laserUp.png'),
+	shieldUp: ContentManager.prototype.makeImage('shieldUp.png'),
+	dischargeUp: ContentManager.prototype.makeImage('dischargeUp.png'),
+	smartBombUp: ContentManager.prototype.makeImage('smartBombUp.png'),
+	tractorBeamUp: ContentManager.prototype.makeImage('tractorBeamUp.png'),
+	ship00: ContentManager.prototype.makeImage('ship00.png'),
+	ship01: ContentManager.prototype.makeImage('ship01.png'),
+	ship02: ContentManager.prototype.makeImage('ship02.png'),
+	ship03: ContentManager.prototype.makeImage('ship03.png'),
+	laser01: ContentManager.prototype.makeImage('laser01.png')
+};
+ContentManager.prototype.sounds = {};

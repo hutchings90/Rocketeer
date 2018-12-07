@@ -40,7 +40,11 @@ View.prototype.toggleClassName = function(e, className) {
 	}
 };
 
-View.prototype.getGameContainer = function() {
-	// console.log('getGameContainer');
-	return this.getElement('#game');
+View.prototype.addGameObject = function(e) {
+	// console.log('addGameObject');
+	View.prototype.GAME_OBJECTS.appendChild(e);
 };
+
+View.prototype.FIELD_HEIGHT = 600;
+View.prototype.FIELD_WIDTH = 1000;
+View.prototype.GAME_OBJECTS = View.prototype.getElement('#game-objects');

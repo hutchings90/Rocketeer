@@ -11,8 +11,10 @@ function RocketeerController() {
 	this.buttonProcessor = this.mainMenuButtonProcessor;
 	this.buttonPressedMax = 16;
 	this.buttonPressedMin = 8;
+	this.enemyTimer = null;
+	this.tick = 20;
+	this.ticksSinceUpdate = 0;
 	this.start();
-	this.cm = new ContentManager();
 }
 
 RocketeerController.prototype.start = function() {
@@ -29,7 +31,7 @@ RocketeerController.prototype.activateGamepadRead = function() {
 	this.deactivateGamepadRead();
 	me.gamepadReadInterval = setInterval(function() {
 		me.readGamepads();
-	}, 20);
+	}, me.tick);
 };
 
 RocketeerController.prototype.deactivateGamepadRead = function() {
@@ -45,7 +47,8 @@ RocketeerController.prototype.readGamepads = function() {
 	var gp = gps[0];
 	this.processAxes(gp);
 	this.processButtons(gp);
-	if (this.state == 'playing') this.update();
+	this.ticksSinceUpdate++;
+	if (this.shouldUpdate()) this.update();
 };
 
 RocketeerController.prototype.processAxes = function(gp) {
@@ -126,10 +129,14 @@ RocketeerController.prototype.endMainMenu = function() {
 };
 
 RocketeerController.prototype.startPlaying = function() {
-	this.buttonProcessor = this.playingButtonProcessor;
-	this.state = 'playing';
-	this.buttonPressedMax = 16;
-	this.buttonPressedMin = 1;
+	var me = this;
+	me.buttonProcessor = me.playingButtonProcessor;
+	me.state = 'playing';
+	me.buttonPressedMax = 16;
+	me.buttonPressedMin = 1;
+	setTimeout(function() {
+		me.makeEnemyGroup();
+	}, 1500);
 };
 
 RocketeerController.prototype.playingButtonProcessor = function(i) {
@@ -207,6 +214,25 @@ RocketeerController.prototype.endGame = function() {
 	}, 200);
 };
 
+RocketeerController.prototype.makeEnemyGroup = function() {
+	// console.log('makeEnemyGroup');
+	var me = this;
+	setTimeout(function() {
+		me.rocketeer.makeEnemyGroup(Enemy.prototype.get(), Math.floor((Math.random() * 4) + 3));
+	}, Math.floor((Math.random() * 5000) + 1500));
+};
+
+RocketeerController.prototype.shouldUpdate = function() {
+	// console.log('shouldUpdate');
+	return this.state == 'playing' && this.ticksSinceUpdate * this.tick >= 200;
+};
+
 RocketeerController.prototype.update = function() {
 	// console.log('update');
+	this.ticksSinceUpdate = 0;
+	this.moveEnemies();
+};
+
+RocketeerController.prototype.moveEnemies = function() {
+	console.log('moveEnemies');
 };

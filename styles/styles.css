@@ -9,6 +9,7 @@ body {
 	background: black;
 	display: inline-block;
 	position: relative;
+	overflow: hidden;
 }
 
 #game-objects * {
