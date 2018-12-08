@@ -12,7 +12,11 @@ function RocketeerController() {
 	this.buttonPressedMax = 16;
 	this.buttonPressedMin = 8;
 	this.enemyTimer = null;
-	this.tick = 20;
+	this.TICK = 20;
+	this.ONE_SECOND = 1000 / this.TICK;
+	this.FIVE_SECONDS = this.ONE_SECOND * 5;
+	this.ticksSinceUpdate = 0;
+	this.ticksToNewGroup = -1;
 	this.ticksSinceUpdate = 0;
 	this.start();
 }
@@ -31,7 +35,10 @@ RocketeerController.prototype.activateGamepadRead = function() {
 	this.deactivateGamepadRead();
 	me.gamepadReadInterval = setInterval(function() {
 		me.readGamepads();
-	}, me.tick);
+		me.ticksSinceUpdate++;
+		me.ticksSinceLastGroup++;
+		if (me.shouldUpdate()) me.update();
+	}, me.TICK);
 };
 
 RocketeerController.prototype.deactivateGamepadRead = function() {
@@ -47,8 +54,6 @@ RocketeerController.prototype.readGamepads = function() {
 	var gp = gps[0];
 	this.processAxes(gp);
 	this.processButtons(gp);
-	this.ticksSinceUpdate++;
-	if (this.shouldUpdate()) this.update();
 };
 
 RocketeerController.prototype.processAxes = function(gp) {
@@ -129,14 +134,13 @@ RocketeerController.prototype.endMainMenu = function() {
 };
 
 RocketeerController.prototype.startPlaying = function() {
-	var me = this;
-	me.buttonProcessor = me.playingButtonProcessor;
-	me.state = 'playing';
-	me.buttonPressedMax = 16;
-	me.buttonPressedMin = 1;
-	setTimeout(function() {
-		me.makeEnemyGroup();
-	}, 1500);
+	// console.log('startPlaying');
+	this.buttonProcessor = this.playingButtonProcessor;
+	this.state = 'playing';
+	this.buttonPressedMax = 16;
+	this.buttonPressedMin = 1;
+	this.ticksSinceLastGroup = 0;
+	this.ticksToNewGroup = 250;
 };
 
 RocketeerController.prototype.playingButtonProcessor = function(i) {
@@ -216,23 +220,46 @@ RocketeerController.prototype.endGame = function() {
 
 RocketeerController.prototype.makeEnemyGroup = function() {
 	// console.log('makeEnemyGroup');
-	var me = this;
-	setTimeout(function() {
-		me.rocketeer.makeEnemyGroup(Enemy.prototype.get(), Math.floor((Math.random() * 4) + 3));
-	}, Math.floor((Math.random() * 5000) + 1500));
+	this.rocketeer.makeEnemyGroup(Enemy.prototype.get(), Math.floor(Math.random() * 4) + 3);
+	this.ticksSinceLastGroup = 0;
+	this.ticksToNewGroup = Math.floor(Math.random() * this.FIVE_SECONDS) + this.ONE_SECOND;
 };
 
 RocketeerController.prototype.shouldUpdate = function() {
 	// console.log('shouldUpdate');
-	return this.state == 'playing' && this.ticksSinceUpdate * this.tick >= 200;
+	return this.state == 'playing' && this.ticksSinceUpdate >= 2;
 };
 
 RocketeerController.prototype.update = function() {
 	// console.log('update');
 	this.ticksSinceUpdate = 0;
-	this.moveEnemies();
+	this.moveEnemyGroups();
+	this.collide();
+	if (this.ticksSinceLastGroup >= this.ticksToNewGroup) this.makeEnemyGroup();
 };
 
-RocketeerController.prototype.moveEnemies = function() {
-	console.log('moveEnemies');
+RocketeerController.prototype.moveEnemyGroups = function() {
+	// console.log('moveEnemyGroups');
+	var groups = this.rocketeer.enemyGroups;
+	for (var i = groups.length - 1; i >= 0; i--) {
+		var group = groups[i];
+		var enemies = group.enemies
+		var pattern = group.pattern;
+		var x = group.x;
+		var y = group.y;
+		for (var j in enemies) {
+			var enemy = enemies[j];
+			var obj = enemy.obj;
+			var e = enemy.e;
+			if (Enemy.prototype[e.x > x ? 'straight' : pattern](obj, e)) {
+				enemies.splice(j, 1);
+				View.prototype.removeElement(e);
+				if (enemies.length < 1) groups.splice(i, 1);
+			}
+		}
+	}
+};
+
+RocketeerController.prototype.collide = function() {
+	// console.log('collide');
 };

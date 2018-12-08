@@ -9,6 +9,11 @@ View.prototype.makeElement = function(tagName, id, className, innerHTML) {
 	return e;
 };
 
+View.prototype.removeElement = function(e) {
+	// console.log('removeElement');
+	e.parentNode.removeChild(e);
+};
+
 View.prototype.getElements = function(query) {
 	// console.log('getElements');
 	return document.querySelectorAll(query);
