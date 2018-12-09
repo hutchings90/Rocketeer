@@ -25,5 +25,5 @@ Enemy.prototype[Enemy.prototype.patterns[2]] = function(enemy, e) {
 
 Enemy.prototype.slant = function(enemy, e, d) {
 	// console.log('slant');
-	return enemy.setPos(enemy.x - Enemy.prototype.SLANT_D * enemy.speed, enemy.y - Enemy.prototype.SLANT_D * d * enemy.speed, e);
+	return enemy.setPos(enemy.x - (Enemy.prototype.SLANT_D * enemy.speed), enemy.y - (Enemy.prototype.SLANT_D * d * enemy.speed), e);
 };

@@ -1,5 +1,8 @@
 function View() {}
 
+View.prototype.FIELD_HEIGHT = 600;
+View.prototype.FIELD_WIDTH = 1000;
+
 View.prototype.makeElement = function(tagName, id, className, innerHTML) {
 	// console.log('makeElement');
 	var e = document.createElement(tagName);
@@ -50,6 +53,4 @@ View.prototype.addGameObject = function(e) {
 	View.prototype.GAME_OBJECTS.appendChild(e);
 };
 
-View.prototype.FIELD_HEIGHT = 600;
-View.prototype.FIELD_WIDTH = 1000;
 View.prototype.GAME_OBJECTS = View.prototype.getElement('#game-objects');
