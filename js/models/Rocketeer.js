@@ -1,6 +1,9 @@
 function Rocketeer() {
 	// console.log('Rocketeer');
-	this.player = new Player('1');
+	this.player = {
+		obj: new Player('1', 50, 280),
+		e: View.prototype.getElement('#player')
+	};
 	this.enemyGroups = [];
 	this.powerUps = [];
 }
