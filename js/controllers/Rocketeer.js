@@ -27,8 +27,6 @@ function RocketeerController() {
 	this.start();
 }
 
-RocketeerController.prototype.SLANT_D = Math.sin(45);
-
 RocketeerController.prototype.start = function() {
 	// console.log('start');
 	this.view.removeClassName(this.mainMenu, 'hide');
@@ -101,10 +99,6 @@ RocketeerController.prototype.menuProcessAxes = function(gp, dx, dy) {
 
 RocketeerController.prototype.playingProcessAxes = function(gp, dx, dy) {
 	// console.log('playingProcessAxes');
-	if (dx != 0 && dy != 0) {
-		dx = this.SLANT_D * dx;
-		dy = this.SLANT_D * dy;
-	}
 	this.movePlayer(dx, dy);
 };
 
@@ -214,6 +208,8 @@ RocketeerController.prototype.endGame = function() {
 	// console.log('endGame');
 	var me = this;
 	me.buttonProcessor = function() {};
+	me.removeGroups();
+	me.removePowerUps();
 	me.state = 'main-menu';
 	me.activeOption = 0;
 	me.view.addClassName(me.pauseMenu, 'hide');
@@ -248,7 +244,6 @@ RocketeerController.prototype.update = function() {
 	this.ticksSinceUpdate = 0;
 	this.moveEnemyGroups();
 	this.movePowerUps();
-	this.collide();
 	if (this.ticksSinceLastGroup >= this.ticksToNewGroup) this.makeEnemyGroup();
 	if (this.ticksSinceLastPowerUp >= this.ticksToNewPowerUp) this.makePowerUp();
 };
@@ -270,6 +265,13 @@ RocketeerController.prototype.setPlayerPos = function(x, y) {
 RocketeerController.prototype.moveEnemyGroups = function() {
 	// console.log('moveEnemyGroups');
 	var groups = this.rocketeer.enemyGroups;
+	var player = this.rocketeer.player;
+	var pobj = player.obj;
+	var pe = player.e;
+	var pl = pobj.x;
+	var pt = pobj.y;
+	var pr = pl + pe.width;
+	var pb = pt + pe.height;
 	for (var i = groups.length - 1; i >= 0; i--) {
 		var group = groups[i];
 		var enemies = group.enemies
@@ -285,6 +287,7 @@ RocketeerController.prototype.moveEnemyGroups = function() {
 				View.prototype.removeElement(e);
 				if (enemies.length < 1) groups.splice(i, 1);
 			}
+			else if (!(obj.x > pr || obj.x + e.width < pl || obj.y > pb || obj.y + e.height < pt)) this.pause();
 		}
 	}
 };
@@ -301,6 +304,23 @@ RocketeerController.prototype.movePowerUps = function() {
 	}
 };
 
-RocketeerController.prototype.collide = function() {
-	// console.log('collide');
+RocketeerController.prototype.removeGroups = function() {
+	// console.log('removeGroups');
+	var groups = this.rocketeer.enemyGroups;
+	for (var i = groups.length - 1; i >= 0; i--) {
+		var group = groups[i];
+		var enemies = group.enemies;
+		for (var j = enemies.length - 1; j >= 0; j--)
+			View.prototype.removeElement(enemies[j].e);
+		groups.pop();
+	}
+};
+
+RocketeerController.prototype.removePowerUps = function() {
+	// console.log('removePowerUps');
+	var powerUps = this.rocketeer.powerUps;
+	for (var i = powerUps.length - 1; i >= 0; i--) {
+		View.prototype.removeElement(powerUps[i].e);
+		powerUps.pop();
+	}
 };
