@@ -8,13 +8,25 @@
 		<div id='game-objects'>
 			<img id='player' src='assets/images/ship00.png' style='left: 50px; top: 280px;'/>
 		</div>
-		<div id='menus'>
-			<div id='main-menu' class='menu hide'>
-				<div>Start Game</div>
+		<div id='screens'>
+			<div id='main-screen' class='hide'>
+				<h2>Main Menu</h2>
+				<div id='main-menu' class='menu'>
+					<div class='active'>Start Game</div>
+				</div>
 			</div>
-			<div id='pause-menu' class='menu hide'>
-				<div>Continue</div>
-				<div>Quit</div>
+			<div id='pause-screen' class='hide'>
+				<h2>Paused</h2>
+				<div id='pause-menu' class='menu'>
+					<div>Continue</div>
+					<div>Quit</div>
+				</div>
+			</div>
+			<div id='end-screen' class='hide'>
+				<h2>Game Over</h2>
+				<div id='end-menu' class='menu'>
+					<div class='active'>Continue</div>
+				</div>
 			</div>
 		</div>
 	</div>

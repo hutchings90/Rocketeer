@@ -5,8 +5,12 @@ function RocketeerController() {
 	this.view = View.prototype;
 	this.gpInputs = [{ axis: 0, buttons: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }];
 	this.state = '';
+	this.mainScreen = this.view.getElement('#main-screen');
+	this.pauseScreen = this.view.getElement('#pause-screen');
+	this.endScreen = this.view.getElement('#end-screen');
 	this.mainMenu = this.view.getElement('#main-menu');
 	this.pauseMenu = this.view.getElement('#pause-menu');
+	this.endMenu = this.view.getElement('#end-menu');
 	this.activeOption = 0;
 	this.buttonProcessor = this.mainMenuButtonProcessor;
 	this.axesAfterProcess = this.menuProcessAxes;
@@ -29,9 +33,13 @@ function RocketeerController() {
 
 RocketeerController.prototype.start = function() {
 	// console.log('start');
-	this.view.removeClassName(this.mainMenu, 'hide');
-	this.view.addClassName(this.mainMenu.children[0], 'active');
 	this.state = 'main-menu';
+	this.buttonProcessor = this.mainMenuButtonProcessor;
+	this.axesAfterProcess = this.menuProcessAxes;
+	this.activeOption = 0;
+	this.buttonPressedMax = 16;
+	this.buttonPressedMin = 0;
+	this.view.removeClassName(this.mainScreen, 'hide');
 	this.startPlayer();
 	this.activateGamepadRead();
 };
@@ -133,7 +141,7 @@ RocketeerController.prototype.mainMenuButtonProcessor = function(i) {
 
 RocketeerController.prototype.endMainMenu = function() {
 	// console.log('endMainMenu');
-	this.view.addClassName(this.mainMenu, 'hide');
+	this.view.addClassName(this.mainScreen, 'hide');
 	this.startPlaying();
 };
 
@@ -180,7 +188,7 @@ RocketeerController.prototype.pause = function() {
 	this.move = this.moveMenu;
 	this.buttonPressedMax = 16;
 	this.buttonPressedMin = 0;
-	this.view.removeClassName(this.pauseMenu, 'hide');
+	this.view.removeClassName(this.pauseScreen, 'hide');
 	this.activeOption = 0;
 	this.view.addClassName(this.pauseMenu.children[0], 'active');
 	this.view.removeClassName(this.pauseMenu.children[0], 'selected');
@@ -193,31 +201,40 @@ RocketeerController.prototype.pauseMenuButtonProcessor = function(i) {
 	if (i == 8) {
 		switch (this.activeOption) {
 		case 0: this.endPause(); break;
-		case 1: this.endGame(); break;
+		case 1:
+			this.view.addClassName(this.pauseScreen, 'hide');
+			this.endGame();
+			break;
 		}
 	}
 };
 
 RocketeerController.prototype.endPause = function() {
 	// console.log('endPause');
-	this.view.addClassName(this.pauseMenu, 'hide');
+	this.view.addClassName(this.pauseScreen, 'hide');
 	this.startPlaying();
 };
 
-RocketeerController.prototype.endGame = function() {
-	// console.log('endGame');
+RocketeerController.prototype.restart = function() {
+	// console.log('restart');
 	var me = this;
 	me.buttonProcessor = function() {};
-	me.removeGroups();
-	me.removePowerUps();
 	me.state = 'main-menu';
 	me.activeOption = 0;
-	me.view.addClassName(me.pauseMenu, 'hide');
-	me.view.removeClassName(me.mainMenu, 'hide');
+	me.view.addClassName(me.pauseScreen, 'hide');
 	me.startPlayer();
 	setTimeout(function() {
+		me.view.removeClassName(me.mainScreen, 'hide');
 		me.buttonProcessor = me.mainMenuButtonProcessor;
-	}, 200);
+	}, 500);
+};
+
+RocketeerController.prototype.endMenuButtonProcessor = function(i) {
+	// console.log('endMenuButtonProcessor');
+	if (i == 8 && this.activeOption == 0) {
+		this.view.addClassName(this.endScreen, 'hide');
+		this.restart();
+	}
 };
 
 RocketeerController.prototype.makeEnemyGroup = function() {
@@ -287,7 +304,10 @@ RocketeerController.prototype.moveEnemyGroups = function() {
 				View.prototype.removeElement(e);
 				if (enemies.length < 1) groups.splice(i, 1);
 			}
-			else if (!(obj.x > pr || obj.x + e.width < pl || obj.y > pb || obj.y + e.height < pt)) this.pause();
+			else if (!(obj.x > pr || obj.x + e.width < pl || obj.y > pb || obj.y + e.height < pt)) {
+				this.endGame();
+				return;
+			}
 		}
 	}
 };
@@ -323,4 +343,21 @@ RocketeerController.prototype.removePowerUps = function() {
 		View.prototype.removeElement(powerUps[i].e);
 		powerUps.pop();
 	}
+};
+
+RocketeerController.prototype.endGame = function() {
+	// console.log('endGame');
+	var me = this;
+	me.state = 'end-menu';
+	me.buttonProcessor = function() {};
+	me.axesAfterProcess = me.menuProcessAxes;
+	me.activeOption = 0;
+	me.buttonPressedMax = 16;
+	me.buttonPressedMin = 0;
+	setTimeout(function() {
+		me.removeGroups();
+		me.removePowerUps();
+		me.view.removeClassName(me.endScreen, 'hide');
+		me.buttonProcessor = me.endMenuButtonProcessor;
+	}, 500);
 };

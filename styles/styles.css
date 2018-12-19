@@ -16,8 +16,14 @@ body {
 	position: absolute;
 }
 
-#menus {
+#screens {
 	display: inline-block;
+}
+
+#screens > div {
+	background: gray;
+	padding: 5px;
+	margin: 10px;
 }
 
 .menu {
@@ -28,7 +34,6 @@ body {
 	background: white;
 	padding: 10px;
 	margin: 5px;
-	border-radius: 5px;
 	text-align: center;
 }
 
