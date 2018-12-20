@@ -12,7 +12,7 @@ function RocketeerController() {
 	this.pauseMenu = this.view.getElement('#pause-menu');
 	this.endMenu = this.view.getElement('#end-menu');
 	this.activeOption = 0;
-	this.buttonProcessor = this.mainMenuButtonProcessor;
+	this.processButtons = this.mainMenuButtonProcessor;
 	this.axesAfterProcess = this.menuProcessAxes;
 	this.move = this.moveMenu;
 	this.buttonPressedMax = 16;
@@ -34,7 +34,7 @@ function RocketeerController() {
 RocketeerController.prototype.start = function() {
 	// console.log('start');
 	this.state = 'main-menu';
-	this.buttonProcessor = this.mainMenuButtonProcessor;
+	this.processButtons = this.mainMenuButtonProcessor;
 	this.axesAfterProcess = this.menuProcessAxes;
 	this.activeOption = 0;
 	this.buttonPressedMax = 16;
@@ -74,7 +74,7 @@ RocketeerController.prototype.readGamepads = function() {
 	if (!gps[0]) return;
 	var gp = gps[0];
 	this.processAxes(gp);
-	this.processButtons(gp);
+	this.processButtons(gp.buttons);
 };
 
 RocketeerController.prototype.processAxes = function(gp) {
@@ -110,14 +110,6 @@ RocketeerController.prototype.playingProcessAxes = function(gp, dx, dy) {
 	this.movePlayer(dx, dy);
 };
 
-RocketeerController.prototype.processButtons = function(gp) {
-	// console.log('processButtons');
-	for (var i in gp.buttons) {
-		i = Number(i);
-		if (gp.buttons[i].pressed) this.buttonProcessor(i);
-	}
-};
-
 RocketeerController.prototype.moveMenu = function(dx, dy) {
 	// console.log('moveMenu');
 	if (this.state == 'pause-menu') this.movePauseMenu(dy);
@@ -134,9 +126,9 @@ RocketeerController.prototype.movePauseMenu = function(d) {
 	this.activeOption = i;
 };
 
-RocketeerController.prototype.mainMenuButtonProcessor = function(i) {
+RocketeerController.prototype.mainMenuButtonProcessor = function(buttons) {
 	// console.log('mainMenuButtonProcessor');
-	if (i == 8) this.endMainMenu();
+	if (buttons[8].pressed && this.processButton(8)) this.endMainMenu();
 };
 
 RocketeerController.prototype.endMainMenu = function() {
@@ -147,7 +139,7 @@ RocketeerController.prototype.endMainMenu = function() {
 
 RocketeerController.prototype.startPlaying = function() {
 	// console.log('startPlaying');
-	this.buttonProcessor = this.playingButtonProcessor;
+	this.processButtons = this.playingButtonProcessor;
 	this.axesAfterProcess = this.playingProcessAxes;
 	this.move = this.movePlayer;
 	this.state = 'playing';
@@ -159,11 +151,14 @@ RocketeerController.prototype.startPlaying = function() {
 	this.ticksToNewPowerUp = this.THIRTY_SECONDS;
 };
 
-RocketeerController.prototype.playingButtonProcessor = function(i) {
+RocketeerController.prototype.playingButtonProcessor = function(buttons) {
 	// console.log('playingButtonProcessor');
-	if (!this.processButton(i)) return;
-	if (i < 8) this.rocketeer.player.obj.attack(i);
-	else if (i == 9) this.pause();
+	var player = this.rocketeer.player.obj;
+	for (var i = 0; i < 8; i++){
+		if (buttons[i].pressed) player.attack(i);
+		else player.clearAttack(i);
+	}
+	if (buttons[9].pressed && !this.processButton(9)) this.pause();
 };
 
 RocketeerController.prototype.processButton = function(i) {
@@ -183,7 +178,7 @@ RocketeerController.prototype.processButton = function(i) {
 RocketeerController.prototype.pause = function() {
 	// console.log('pause');
 	this.state = 'pause-menu';
-	this.buttonProcessor = this.pauseMenuButtonProcessor;
+	this.processButtons = this.pauseMenuButtonProcessor;
 	this.axesAfterProcess = this.menuProcessAxes;
 	this.move = this.moveMenu;
 	this.buttonPressedMax = 16;
@@ -196,9 +191,9 @@ RocketeerController.prototype.pause = function() {
 	this.view.removeClassName(this.pauseMenu.children[1], 'selected');
 };
 
-RocketeerController.prototype.pauseMenuButtonProcessor = function(i) {
+RocketeerController.prototype.pauseMenuButtonProcessor = function(buttons) {
 	// console.log('pauseMenuButtonProcessor');
-	if (i == 8) {
+	if (buttons[8].pressed && this.processButton(8)) {
 		switch (this.activeOption) {
 		case 0: this.endPause(); break;
 		case 1:
@@ -218,20 +213,19 @@ RocketeerController.prototype.endPause = function() {
 RocketeerController.prototype.restart = function() {
 	// console.log('restart');
 	var me = this;
-	me.buttonProcessor = function() {};
+	me.processButtons = function() {};
 	me.state = 'main-menu';
 	me.activeOption = 0;
 	me.view.addClassName(me.pauseScreen, 'hide');
-	me.startPlayer();
 	setTimeout(function() {
 		me.view.removeClassName(me.mainScreen, 'hide');
-		me.buttonProcessor = me.mainMenuButtonProcessor;
+		me.processButtons = me.mainMenuButtonProcessor;
 	}, 500);
 };
 
-RocketeerController.prototype.endMenuButtonProcessor = function(i) {
+RocketeerController.prototype.endMenuButtonProcessor = function(buttons) {
 	// console.log('endMenuButtonProcessor');
-	if (i == 8 && this.activeOption == 0) {
+	if (buttons[8].pressed && this.processButton(8) && this.activeOption == 0) {
 		this.view.addClassName(this.endScreen, 'hide');
 		this.restart();
 	}
@@ -349,7 +343,7 @@ RocketeerController.prototype.endGame = function() {
 	// console.log('endGame');
 	var me = this;
 	me.state = 'end-menu';
-	me.buttonProcessor = function() {};
+	me.processButtons = function() {};
 	me.axesAfterProcess = me.menuProcessAxes;
 	me.activeOption = 0;
 	me.buttonPressedMax = 16;
@@ -357,7 +351,8 @@ RocketeerController.prototype.endGame = function() {
 	setTimeout(function() {
 		me.removeGroups();
 		me.removePowerUps();
+		me.startPlayer();
 		me.view.removeClassName(me.endScreen, 'hide');
-		me.buttonProcessor = me.endMenuButtonProcessor;
+		me.processButtons = me.endMenuButtonProcessor;
 	}, 500);
 };

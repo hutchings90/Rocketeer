@@ -36,6 +36,9 @@ ContentManager.prototype.images = {
 	ship01: ContentManager.prototype.makeImage('ship01.png'),
 	ship02: ContentManager.prototype.makeImage('ship02.png'),
 	ship03: ContentManager.prototype.makeImage('ship03.png'),
-	laser01: ContentManager.prototype.makeImage('laser01.png')
+	laser01: ContentManager.prototype.makeImage('laser01.png'),
+	smartBomb1: ContentManager.prototype.makeImage('smartBomb1.png'),
+	smartBomb2: ContentManager.prototype.makeImage('smartBomb2.png'),
+	smartBomb3: ContentManager.prototype.makeImage('smartBomb3.png')
 };
 ContentManager.prototype.sounds = {};
