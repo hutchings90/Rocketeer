@@ -1,21 +1,5 @@
 function ContentManager() {}
 
-ContentManager.prototype.getImage = function(key) {
-	// console.log('getImage');
-	return this.getAsset('images', key);
-};
-
-ContentManager.prototype.getSound = function(key) {
-	// console.log('getSound');
-	return this.getAsset('sounds', key);
-};
-
-ContentManager.prototype.getAsset = function(type, key) {
-	// console.log('getAsset');
-	if (!this[type] || !this[type][key]) return null;
-	return this[type][key].cloneNode(true);
-};
-
 ContentManager.prototype.makeImage = function(file) {
 	var e = View.prototype.makeElement('img');
 	e.src = this.IMAGE_PATH + file;
@@ -36,9 +20,28 @@ ContentManager.prototype.images = {
 	ship01: ContentManager.prototype.makeImage('ship01.png'),
 	ship02: ContentManager.prototype.makeImage('ship02.png'),
 	ship03: ContentManager.prototype.makeImage('ship03.png'),
-	laser01: ContentManager.prototype.makeImage('laser01.png'),
+	laser1: ContentManager.prototype.makeImage('laser1.png'),
+	bomb1: ContentManager.prototype.makeImage('bomb1.gif'),
+	bomb2: ContentManager.prototype.makeImage('bomb2.gif'),
+	bomb3: ContentManager.prototype.makeImage('bomb3.gif'),
 	smartBomb1: ContentManager.prototype.makeImage('smartBomb1.gif'),
 	smartBomb2: ContentManager.prototype.makeImage('smartBomb2.gif'),
 	smartBomb3: ContentManager.prototype.makeImage('smartBomb3.gif')
 };
 ContentManager.prototype.sounds = {};
+
+ContentManager.prototype.getAsset = function(type, key) {
+	// console.log('getAsset');
+	if (!this[type] || !this[type][key]) return null;
+	return this[type][key].cloneNode(true);
+};
+
+ContentManager.prototype.getImage = function(key) {
+	// console.log('getImage');
+	return this.getAsset('images', key);
+};
+
+ContentManager.prototype.getSound = function(key) {
+	// console.log('getSound');
+	return this.getAsset('sounds', key);
+};

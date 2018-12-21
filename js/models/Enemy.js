@@ -1,10 +1,11 @@
 function Enemy() {}
 
-Enemy.prototype.enemies = [new Mover('ship01', 0, 0, 4), new Mover('ship02'), new Mover('ship03', 0, 0, 10)];
+Enemy.prototype.enemies = [new Mover('ship01', 4), new Mover('ship02'), new Mover('ship03', 10)];
 Enemy.prototype.patterns = ['straight', 'upSlant', 'downSlant'];
 Enemy.prototype.SLANT_D = Math.sin(45);
 
 Enemy.prototype.get = function() {
+	// console.log('get');
 	return Object.create(Enemy.prototype.enemies[Math.floor(Math.random() * Enemy.prototype.enemies.length)]);
 };
 

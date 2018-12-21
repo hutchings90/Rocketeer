@@ -1,20 +1,21 @@
-function Mover(name, x, y, speed) {
+function Mover(name, speed, x, y) {
 	// console.log('Mover');
 	this.name = name;
+	this.speed = speed || 5;
 	this.x = x || 0;
 	this.y = y || 0;
-	this.speed = speed || 5;
 }
 
 Mover.prototype.setPos = function(x, y, e) {
 	// console.log('setPos');
 	var bottom = 0 - e.height;
-	if (x < 0 - e.width) return true;
+	if (x < this.x && x < 0 - e.width) return -1;
+	if (x > this.x && x > View.prototype.FIELD_WIDTH) return 1;
 	if (y < 0 - e.height) y = View.prototype.FIELD_HEIGHT;
 	else if (y > View.prototype.FIELD_HEIGHT) y = bottom;
 	this.x = x;
 	this.y = y;
 	e.style.left = this.x + 'px';
 	e.style.top = this.y + 'px';
-	return false;
+	return 0;
 };

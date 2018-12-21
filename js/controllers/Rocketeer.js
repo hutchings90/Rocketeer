@@ -28,6 +28,7 @@ function RocketeerController() {
 	this.ticksSinceLastPowerUp = 0;
 	this.ticksToNewPowerUp = -1;
 	this.ticksSinceUpdate = 0;
+	this.playerAttacks = [];
 	this.start();
 }
 
@@ -153,10 +154,15 @@ RocketeerController.prototype.startPlaying = function() {
 
 RocketeerController.prototype.playingButtonProcessor = function(buttons) {
 	// console.log('playingButtonProcessor');
-	var player = this.rocketeer.player.obj;
-	for (var i = 0; i < 8; i++){
-		if (buttons[i].pressed) player.attack(i);
-		else player.clearAttack(i);
+	var po = this.rocketeer.player.obj;
+	var pe = this.rocketeer.player.e;
+	for (var i = 0; i < 8; i++) {
+		if (buttons[i].pressed) {
+			if (po.attack(i)) {
+				this.playerAttacks.push(po.attacks[i].make(po.x + pe.width, po.y + (pe.height / 2)));
+			}
+		}
+		else po.tickToClearAttack(i);
 	}
 	if (buttons[9].pressed && !this.processButton(9)) this.pause();
 };
@@ -253,6 +259,7 @@ RocketeerController.prototype.shouldUpdate = function() {
 RocketeerController.prototype.update = function() {
 	// console.log('update');
 	this.ticksSinceUpdate = 0;
+	this.movePlayerAttacks();
 	this.moveEnemyGroups();
 	this.movePowerUps();
 	if (this.ticksSinceLastGroup >= this.ticksToNewGroup) this.makeEnemyGroup();
@@ -293,7 +300,7 @@ RocketeerController.prototype.moveEnemyGroups = function() {
 			var enemy = enemies[j];
 			var obj = enemy.obj;
 			var e = enemy.e;
-			if (Enemy.prototype[e.x > x ? 'straight' : pattern](obj, e)) {
+			if (Enemy.prototype[e.x > x ? 'straight' : pattern](obj, e) == -1) {
 				enemies.splice(j, 1);
 				View.prototype.removeElement(e);
 				if (enemies.length < 1) groups.splice(i, 1);
@@ -311,9 +318,21 @@ RocketeerController.prototype.movePowerUps = function() {
 	var ups = this.rocketeer.powerUps;
 	for (var i = ups.length - 1; i >= 0; i--) {
 		var up = ups[i];
-		if (PowerUp.prototype.move(up.obj, up.e)) {
+		if (PowerUp.prototype.move(up.obj, up.e) == -1) {
 			ups.splice(i, 1);
 			View.prototype.removeElement(up.e);
+		}
+	}
+};
+
+RocketeerController.prototype.movePlayerAttacks = function() {
+	// console.log('movePlayerAttacks');
+	var attacks = this.playerAttacks;
+	for (var i = attacks.length - 1; i >= 0; i--) {
+		var attack = attacks[i];
+		if (attack.move() == 1) {
+			attacks.splice(i, 1);
+			View.prototype.removeElement(attack.e);
 		}
 	}
 };
@@ -339,6 +358,15 @@ RocketeerController.prototype.removePowerUps = function() {
 	}
 };
 
+RocketeerController.prototype.removePlayerAttacks = function() {
+	// console.log('removePowerUps');
+	var playerAttacks = this.playerAttacks;
+	for (var i = playerAttacks.length - 1; i >= 0; i--) {
+		View.prototype.removeElement(playerAttacks[i].e);
+		playerAttacks.pop();
+	}
+};
+
 RocketeerController.prototype.endGame = function() {
 	// console.log('endGame');
 	var me = this;
@@ -351,6 +379,7 @@ RocketeerController.prototype.endGame = function() {
 	setTimeout(function() {
 		me.removeGroups();
 		me.removePowerUps();
+		me.removePlayerAttacks();
 		me.startPlayer();
 		me.view.removeClassName(me.endScreen, 'hide');
 		me.processButtons = me.endMenuButtonProcessor;
