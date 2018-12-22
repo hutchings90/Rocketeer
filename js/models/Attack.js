@@ -1,9 +1,10 @@
-function Attack(name, delay) {
+function Attack(name, delay, speed) {
 	// console.log('Attack');
 	this.name = name;
 	this.ticks = 0;
 	this.level = 1;
 	this.delay = delay;
+	this.speed = speed;
 }
 
 Attack.prototype.clear = function() {
@@ -37,10 +38,10 @@ Attack.prototype.getFilename = function() {
 	return names.join('') + this.level;
 };
 
-Attack.prototype.make = function(x, y) {
+Attack.prototype.make = function(speed, x, y) {
 	// console.log('make');
 	var filename = this.getFilename();
-	var obj = new Mover(filename);
+	var obj = new Mover(filename, speed);
 	var e = ContentManager.prototype.getImage(filename);
 	y = (y - (e.height / 2));
 	obj.x = x;

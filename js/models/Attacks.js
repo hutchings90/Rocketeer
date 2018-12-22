@@ -1,6 +1,6 @@
 function SmartBomb() {
 	// console.log('SmartBomb');
-	Attack.call(this, 'Smart Bomb', 100);
+	Attack.call(this, 'Smart Bomb', 100, 5);
 }
 
 SmartBomb.prototype = Object.create(Attack.prototype);
@@ -12,7 +12,7 @@ SmartBomb.prototype.isDone = function() {
 
 function Laser() {
 	// console.log('Laser');
-	Attack.call(this, 'Laser', 35);
+	Attack.call(this, 'Laser', 35, 10);
 }
 
 Laser.prototype = Object.create(Attack.prototype);
@@ -28,7 +28,7 @@ Discharge.constructor = Discharge;
 
 function Bomb() {
 	// console.log('Bomb');
-	Attack.call(this, 'Bomb', 100);
+	Attack.call(this, 'Bomb', 100, 5);
 }
 
 Bomb.prototype = Object.create(Attack.prototype);

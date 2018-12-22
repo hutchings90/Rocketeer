@@ -159,7 +159,7 @@ RocketeerController.prototype.playingButtonProcessor = function(buttons) {
 	for (var i = 0; i < 8; i++) {
 		if (buttons[i].pressed) {
 			if (po.attack(i)) {
-				this.playerAttacks.push(po.attacks[i].make(po.x + pe.width, po.y + (pe.height / 2)));
+				this.playerAttacks.push(po.attacks[i].make(po.attacks[i].speed, po.x + pe.width, po.y + (pe.height / 2)));
 			}
 		}
 		else po.tickToClearAttack(i);
