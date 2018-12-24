@@ -439,6 +439,8 @@ RocketeerController.prototype.endGame = function() {
 	me.activeOption = 0;
 	me.buttonPressedMax = 16;
 	me.buttonPressedMin = 0;
+	me.dropShield();
+	me.dropDisruptor();
 	setTimeout(function() {
 		me.removeGroups();
 		me.removePowerUps();
@@ -594,5 +596,5 @@ RocketeerController.prototype.enemyCollidesWithDisruptor = function(obj, e) {
 	// console.log('enemyCollidesWithDisruptor');
 	var disruptor = this.disruptorE;
 	if (disruptor.className.includes('hide')) return false;
-	return !(obj.x > disruptor.x + disruptor.width || obj.x + e.width < disruptor.x || obj.y > disruptor.y + disruptor.height || obj.y + e.height < disruptor.y);
+	return !(e.x > disruptor.x + disruptor.width || e.x + e.width < disruptor.x || e.y > disruptor.y + disruptor.height || e.y + e.height < disruptor.y);
 };
