@@ -11,6 +11,9 @@ function RocketeerController() {
 	this.mainMenu = this.view.getElement('#main-menu');
 	this.pauseMenu = this.view.getElement('#pause-menu');
 	this.endMenu = this.view.getElement('#end-menu');
+	this.disruptorE = this.view.getElement('#disruptor');
+	this.disruptorE.x = 0;
+	this.disruptorE.y = 0;
 	this.shieldE = this.view.getElement('#shield');
 	this.shieldE.width = 80;
 	this.shieldE.height = 80;
@@ -52,7 +55,8 @@ RocketeerController.prototype.start = function() {
 
 RocketeerController.prototype.startPlayer = function() {
 	// console.log('startPlayer');
-	this.setPlayerPos(50, 280)
+	this.setPlayerPos(50, 280);
+	this.rocketeer.player.obj.reset();
 };
 
 RocketeerController.prototype.activateGamepadRead = function() {
@@ -176,8 +180,8 @@ RocketeerController.prototype.playingButtonProcessor = function(buttons) {
 	}
 	if (buttons[6].pressed || buttons[7].pressed) this.shield();
 	else this.dropShield();
-	if (buttons[4].pressed || buttons[5].pressed) this.tractorBeam();
-	else this.dropTractorBeam();
+	if (buttons[4].pressed || buttons[5].pressed) this.disruptor();
+	else this.dropDisruptor();
 	if (buttons[3].pressed) this.discharge();
 	if (buttons[9].pressed && !this.processButton(9)) this.pause();
 };
@@ -316,12 +320,15 @@ RocketeerController.prototype.moveEnemyGroups = function() {
 			var enemy = enemies[j];
 			var obj = enemy.obj;
 			var e = enemy.e;
-			if (Enemy.prototype[e.x > x ? 'straight' : pattern](obj, e) == -1) {
-				enemies.splice(j, 1);
-				this.view.removeElement(e);
-				if (enemies.length < 1) groups.splice(i, 1);
+			if (!this.enemyCollidesWithDisruptor(obj, e)) {
+				if (Enemy.prototype[e.x > x ? 'straight' : pattern](obj, e) == -1) {
+					enemies.splice(j, 1);
+					this.view.removeElement(e);
+					if (enemies.length < 1) groups.splice(i, 1);
+					continue;
+				}
 			}
-			else if (this.objectCollidesWithAttack(obj, e)) {
+			if (this.objectCollidesWithAttack(obj, e)) {
 				enemies.splice(j, 1);
 				this.view.removeElement(e);
 				if (enemies.length < 1) groups.splice(i, 1);
@@ -377,6 +384,8 @@ RocketeerController.prototype.movePowerUps = function() {
 		}
 		else if (this.objectCollidesWithAttack(obj, e)) {
 			this.explodePowerUp(up);
+			this.rocketeer.powerUps.splice(i, 1);
+			this.view.removeElement(up.e);
 		}
 	}
 };
@@ -480,7 +489,12 @@ RocketeerController.prototype.enemyCollidesWithAttackExplosion = function(obj, e
 
 RocketeerController.prototype.explodePowerUp = function(up) {
 	// console.log('explodePowerUp');
-	console.log(up);
+	var img = ContentManager.prototype.getImage('attackExplosion1');
+	var x = up.obj.x + (up.e.width / 2) - (img.width / 2);
+	var y = up.obj.y + (up.e.height / 2) - (img.height / 2);
+	var explosion = new Explosion(img, x, y);
+	this.attackExplosions.push(explosion);
+	this.view.addGameObject(explosion.e);
 };
 
 RocketeerController.prototype.processExplosions = function() {
@@ -552,12 +566,22 @@ RocketeerController.prototype.dropShield = function() {
 	this.view.addClassName(this.shieldE, 'hide');
 };
 
-RocketeerController.prototype.tractorBeam = function() {
-	// console.log('tractorBeam');
+RocketeerController.prototype.disruptor = function() {
+	// console.log('disruptor');
+	if (!this.rocketeer.player.obj.disruptor(true)) return this.dropDisruptor();
+	var disruptor = this.disruptorE;
+	var player = this.rocketeer.player;
+	var obj = player.obj;
+	var e = player.e;
+	disruptor.style.left = (obj.x + e.width) + 'px';
+	disruptor.style.top = obj.y + 'px';
+	this.view.removeClassName(disruptor, 'hide');
 };
 
-RocketeerController.prototype.dropTractorBeam = function() {
-	// console.log('dropTractorBeam');
+RocketeerController.prototype.dropDisruptor = function() {
+	// console.log('dropDisruptor');
+	this.rocketeer.player.obj.disruptor(false);
+	this.view.addClassName(this.disruptorE, 'hide');
 };
 
 RocketeerController.prototype.discharge = function() {
@@ -566,4 +590,11 @@ RocketeerController.prototype.discharge = function() {
 	if (player.obj.discharge()) {
 		this.explodeAttack(player.obj.attacks[3], player.obj.x, player.obj.y, player.e);
 	}
+};
+
+RocketeerController.prototype.enemyCollidesWithDisruptor = function(obj, e) {
+	// console.log('enemyCollidesWithDisruptor');
+	var disruptor = this.disruptorE;
+	if (disruptor.className.includes('hide')) return false;
+	return !(obj.x > disruptor.x + disruptor.width || obj.x + e.width < disruptor.x || obj.y > disruptor.y + disruptor.height || obj.y + e.height < disruptor.y);
 };

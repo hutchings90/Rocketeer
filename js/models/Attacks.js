@@ -89,17 +89,52 @@ Bomb.prototype.setLevel = function(level) {
 	this.level = level || 1;
 };
 
-function TractorBeam(level) {
-	// console.log('TractorBeam');
-	Attack.call(this, 'Tractor Beam', 0, 0, level);
-	this.charge = 200;
+function Disruptor(level) {
+	// console.log('Disruptor');
+	Attack.call(this, 'Disruptor Beam', 0, 0, level);
+	this.limit = 200;
+	this.state = 'idle';
 }
 
-TractorBeam.prototype = Object.create(Attack.prototype);
-TractorBeam.constructor = TractorBeam;
+Disruptor.prototype = Object.create(Attack.prototype);
+Disruptor.constructor = Disruptor;
 
-TractorBeam.prototype.isDone = function() {
-	// console.log('isDone');
+Disruptor.prototype.tick = function(pressed) {
+	// console.log('tick');
+	switch (this.state) {
+	case 'idle':
+		if (!pressed) {
+			if (this.ticks > 0) this.ticks--;
+			return false;
+		}
+		if (this.ticks >= this.limit) {
+			this.state = 'refreshing';
+			return false;
+		}
+		this.ticks++;
+		return true;
+	case 'refreshing':
+		if (--this.ticks <= this.limit / 2) {
+			this.state = 'idle';
+			if (pressed) {
+				this.ticks++;
+				return true;
+			}
+		}
+	}
+	return false;
+};
+
+Disruptor.prototype.setLevel = function(level) {
+	// console.log('setLevel');
+	if (level > 3) level = 3;
+	this.level = level || 1;
+};
+
+Disruptor.prototype.levelStats = function(delay, speed, level) {
+	// console.log('levelStats');
+	this.setLevel(level);
+	this.limit = 200 + (100 * (this.level - 1));
 };
 
 function Shield(level) {
@@ -142,4 +177,16 @@ Shield.prototype.deplete = function() {
 	// console.log('deplete');
 	this.ticks = this.limit;
 	this.state = 'refreshing';
+};
+
+Shield.prototype.setLevel = function(level) {
+	// console.log('setLevel');
+	if (level > 3) level = 3;
+	this.level = level || 1;
+};
+
+Shield.prototype.levelStats = function(delay, speed, level) {
+	// console.log('levelStats');
+	this.setLevel(level);
+	this.limit = 200 + (100 * (this.level - 1));
 };

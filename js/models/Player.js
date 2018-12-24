@@ -1,7 +1,7 @@
 function Player(name, x, y) {
 	// console.log('Player');
 	Mover.call(this, name, 2, x, y);
-	this.attacks = [ new SmartBomb(), new Laser(), new Bomb(), new Discharge(), new TractorBeam(), new Shield() ];
+	this.attacks = [ new SmartBomb(), new Laser(), new Bomb(), new Discharge(), new Disruptor(), new Shield() ];
 }
 
 Player.prototype = Object.create(Mover.prototype);
@@ -28,9 +28,9 @@ Player.prototype.shield = function(pressed) {
 	return this.attacks[5].tick(pressed);
 };
 
-Player.prototype.tractorBeam = function() {
-	// console.log('tractorBeam');
-	return this.attacks[4].tick();
+Player.prototype.disruptor = function(pressed) {
+	// console.log('disruptor');
+	return this.attacks[4].tick(pressed);
 };
 
 Player.prototype.depleteShield = function() {
@@ -45,4 +45,9 @@ Player.prototype.discharge = function() {
 		return true;
 	}
 	return false;
+};
+
+Player.prototype.reset = function() {
+	// console.log('reset');
+	for (var i = this.attacks.length - 1; i >= 0; i--) this.attacks[i].reset();
 };

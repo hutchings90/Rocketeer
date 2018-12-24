@@ -73,3 +73,9 @@ Attack.prototype.setLevel = function(level) {
 	if (level > 6) level = 6;
 	this.level = level || 1;
 };
+
+Attack.prototype.reset = function() {
+	// console.log('reset');
+	this.levelStats(this.delay, this.speed, 1);
+	this.ticks = 0;
+};

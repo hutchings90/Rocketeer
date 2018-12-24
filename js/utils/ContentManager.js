@@ -15,7 +15,7 @@ ContentManager.prototype.images = {
 	shieldUp: ContentManager.prototype.makeImage('shieldUp.png'),
 	dischargeUp: ContentManager.prototype.makeImage('dischargeUp.png'),
 	smartBombUp: ContentManager.prototype.makeImage('smartBombUp.png'),
-	tractorBeamUp: ContentManager.prototype.makeImage('tractorBeamUp.png'),
+	disruptorUp: ContentManager.prototype.makeImage('disruptorUp.png'),
 	ship00: ContentManager.prototype.makeImage('ship00.png'),
 	ship01: ContentManager.prototype.makeImage('ship01.png'),
 	ship02: ContentManager.prototype.makeImage('ship02.png'),
