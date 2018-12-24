@@ -20,13 +20,17 @@ ContentManager.prototype.images = {
 	ship01: ContentManager.prototype.makeImage('ship01.png'),
 	ship02: ContentManager.prototype.makeImage('ship02.png'),
 	ship03: ContentManager.prototype.makeImage('ship03.png'),
-	laser1: ContentManager.prototype.makeImage('laser1.png'),
+	laser: ContentManager.prototype.makeImage('laser.png'),
 	bomb1: ContentManager.prototype.makeImage('bomb1.gif'),
 	bomb2: ContentManager.prototype.makeImage('bomb2.gif'),
 	bomb3: ContentManager.prototype.makeImage('bomb3.gif'),
 	smartBomb1: ContentManager.prototype.makeImage('smartBomb1.gif'),
 	smartBomb2: ContentManager.prototype.makeImage('smartBomb2.gif'),
-	smartBomb3: ContentManager.prototype.makeImage('smartBomb3.gif')
+	smartBomb3: ContentManager.prototype.makeImage('smartBomb3.gif'),
+	smallExplosion: ContentManager.prototype.makeImage('smallExplosion.gif'),
+	attackExplosion1: ContentManager.prototype.makeImage('attackExplosion1.gif'),
+	attackExplosion2: ContentManager.prototype.makeImage('attackExplosion2.gif'),
+	attackExplosion3: ContentManager.prototype.makeImage('attackExplosion3.gif')
 };
 ContentManager.prototype.sounds = {};
 

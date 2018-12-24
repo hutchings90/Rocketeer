@@ -1,10 +1,9 @@
-function Attack(name, delay, speed) {
+function Attack(name, delay, speed, level, explodes) {
 	// console.log('Attack');
 	this.name = name;
 	this.ticks = 0;
-	this.level = 1;
-	this.delay = delay;
-	this.speed = speed;
+	this.explodes = explodes || false;
+	this.levelStats(delay, speed, level);
 }
 
 Attack.prototype.clear = function() {
@@ -31,11 +30,11 @@ Attack.prototype.tick = function() {
 	return true;
 };
 
-Attack.prototype.getFilename = function() {
+Attack.prototype.getFilename = function(withoutLevel) {
 	// console.log('getFilename');
 	var names = this.name.split(' ');
 	names[0] = names[0][0].toLowerCase() + names[0].substring(1, names[0].length);
-	return names.join('') + this.level;
+	return names.join('') + (withoutLevel ? '' : this.level);
 };
 
 Attack.prototype.make = function(speed, x, y) {
@@ -52,6 +51,7 @@ Attack.prototype.make = function(speed, x, y) {
 	return {
 		obj: obj,
 		e: e,
+		attack: this,
 		move: this.move
 	};
 };
@@ -59,4 +59,17 @@ Attack.prototype.make = function(speed, x, y) {
 Attack.prototype.move = function() {
 	// console.log('move');
 	return this.obj.setPos(this.obj.x + this.obj.speed, this.obj.y, this.e);
+};
+
+Attack.prototype.levelStats = function(delay, speed, level) {
+	// console.log('levelStats');
+	this.setLevel(level);
+	this.delay = delay;
+	this.speed = speed;
+};
+
+Attack.prototype.setLevel = function(level) {
+	// console.log('setLevel');
+	if (level > 6) level = 6;
+	this.level = level || 1;
 };

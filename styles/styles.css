@@ -26,6 +26,14 @@ body {
 	margin: 10px;
 }
 
+#shield {
+	background: blue;
+	width: 80px;
+	height: 80px;
+	border-radius: 40px;
+	opacity: .5;
+}
+
 .menu {
 	width: 200px;
 }

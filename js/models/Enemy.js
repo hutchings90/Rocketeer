@@ -6,7 +6,7 @@ Enemy.prototype.SLANT_D = Math.sin(45);
 
 Enemy.prototype.get = function() {
 	// console.log('get');
-	return Object.create(Enemy.prototype.enemies[Math.floor(Math.random() * Enemy.prototype.enemies.length)]);
+	return Object.assign(new Mover(), Enemy.prototype.enemies[Math.floor(Math.random() * Enemy.prototype.enemies.length)]);
 };
 
 Enemy.prototype[Enemy.prototype.patterns[0]] = function(enemy, e) {

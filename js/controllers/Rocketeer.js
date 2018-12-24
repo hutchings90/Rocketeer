@@ -11,6 +11,9 @@ function RocketeerController() {
 	this.mainMenu = this.view.getElement('#main-menu');
 	this.pauseMenu = this.view.getElement('#pause-menu');
 	this.endMenu = this.view.getElement('#end-menu');
+	this.shieldE = this.view.getElement('#shield');
+	this.shieldE.width = 80;
+	this.shieldE.height = 80;
 	this.activeOption = 0;
 	this.processButtons = this.mainMenuButtonProcessor;
 	this.axesAfterProcess = this.menuProcessAxes;
@@ -21,14 +24,16 @@ function RocketeerController() {
 	this.TICK = 20;
 	this.ONE_SECOND = 1000 / this.TICK;
 	this.FIVE_SECONDS = this.ONE_SECOND * 5;
+	this.FIFTEEN_SECONDS = this.ONE_SECOND * 15;
 	this.THIRTY_SECONDS = this.ONE_SECOND * 30;
-	this.SIXTY_SECONDS = this.ONE_SECOND * 60;
 	this.ticksSinceLastGroup = 0;
 	this.ticksToNewGroup = -1;
 	this.ticksSinceLastPowerUp = 0;
 	this.ticksToNewPowerUp = -1;
 	this.ticksSinceUpdate = 0;
 	this.playerAttacks = [];
+	this.explosions = [];
+	this.attackExplosions = [];
 	this.start();
 }
 
@@ -55,6 +60,7 @@ RocketeerController.prototype.activateGamepadRead = function() {
 	var me = this;
 	this.deactivateGamepadRead();
 	me.gamepadReadInterval = setInterval(function() {
+		me.processExplosions();
 		me.readGamepads();
 		me.ticksSinceUpdate++;
 		me.ticksSinceLastGroup++;
@@ -149,21 +155,30 @@ RocketeerController.prototype.startPlaying = function() {
 	this.ticksSinceLastGroup = 0;
 	this.ticksToNewGroup = 250;
 	this.ticksSinceLastPowerUp = 0;
-	this.ticksToNewPowerUp = this.THIRTY_SECONDS;
+	this.ticksToNewPowerUp = this.FIFTEEN_SECONDS;
+	// this.ticksToNewPowerUp = this.THIRTY_SECONDS;
 };
 
 RocketeerController.prototype.playingButtonProcessor = function(buttons) {
 	// console.log('playingButtonProcessor');
 	var po = this.rocketeer.player.obj;
 	var pe = this.rocketeer.player.e;
-	for (var i = 0; i < 8; i++) {
+	for (var i = 0; i < 3; i++) {
 		if (buttons[i].pressed) {
-			if (po.attack(i)) {
-				this.playerAttacks.push(po.attacks[i].make(po.attacks[i].speed, po.x + pe.width, po.y + (pe.height / 2)));
+			var result = po.attack(i);
+			if (result == 'Smart Bomb') {
+				var attack = this.getPlayerAttack(result);
+				this.explodeAttack(attack.attack, attack.obj.x, attack.obj.y, pe);
 			}
+			else if (result) this.playerAttacks.push(po.attacks[i].make(po.attacks[i].speed, po.x + pe.width, po.y + (pe.height / 2)));
 		}
 		else po.tickToClearAttack(i);
 	}
+	if (buttons[6].pressed || buttons[7].pressed) this.shield();
+	else this.dropShield();
+	if (buttons[4].pressed || buttons[5].pressed) this.tractorBeam();
+	else this.dropTractorBeam();
+	if (buttons[3].pressed) this.discharge();
 	if (buttons[9].pressed && !this.processButton(9)) this.pause();
 };
 
@@ -248,7 +263,8 @@ RocketeerController.prototype.makePowerUp = function() {
 	// console.log('makePowerUp');
 	this.rocketeer.makePowerUp();
 	this.ticksSinceLastPowerUp = 0;
-	this.ticksToNewPowerUp = Math.floor(Math.random() * this.SIXTY_SECONDS) + this.THIRTY_SECONDS;
+	this.ticksToNewPowerUp = Math.floor(Math.random() * this.FIFTEEN_SECONDS);
+	// this.ticksToNewPowerUp = Math.floor(Math.random() * this.FIFTEEN_SECONDS) + this.FIFTEEN_SECONDS;
 };
 
 RocketeerController.prototype.shouldUpdate = function() {
@@ -282,7 +298,6 @@ RocketeerController.prototype.setPlayerPos = function(x, y) {
 
 RocketeerController.prototype.moveEnemyGroups = function() {
 	// console.log('moveEnemyGroups');
-	var groups = this.rocketeer.enemyGroups;
 	var player = this.rocketeer.player;
 	var pobj = player.obj;
 	var pe = player.e;
@@ -290,6 +305,7 @@ RocketeerController.prototype.moveEnemyGroups = function() {
 	var pt = pobj.y;
 	var pr = pl + pe.width;
 	var pb = pt + pe.height;
+	var groups = this.rocketeer.enemyGroups;
 	for (var i = groups.length - 1; i >= 0; i--) {
 		var group = groups[i];
 		var enemies = group.enemies
@@ -302,12 +318,35 @@ RocketeerController.prototype.moveEnemyGroups = function() {
 			var e = enemy.e;
 			if (Enemy.prototype[e.x > x ? 'straight' : pattern](obj, e) == -1) {
 				enemies.splice(j, 1);
-				View.prototype.removeElement(e);
+				this.view.removeElement(e);
 				if (enemies.length < 1) groups.splice(i, 1);
 			}
+			else if (this.objectCollidesWithAttack(obj, e)) {
+				enemies.splice(j, 1);
+				this.view.removeElement(e);
+				if (enemies.length < 1) groups.splice(i, 1);
+				this.makeSmallExplosion(obj.x, obj.y);
+			}
+			else if (this.enemyCollidesWithAttackExplosion(obj, e)) {
+				enemies.splice(j, 1);
+				this.view.removeElement(e);
+				if (enemies.length < 1) groups.splice(i, 1);
+				this.makeSmallExplosion(obj.x, obj.y);
+			}
 			else if (!(obj.x > pr || obj.x + e.width < pl || obj.y > pb || obj.y + e.height < pt)) {
-				this.endGame();
-				return;
+				if (this.shieldE.className.includes('hide')) {
+					this.makeSmallExplosion(pl, pt);
+					this.endGame();
+					return;
+				}
+				else {
+					enemies.splice(j, 1);
+					this.view.removeElement(e);
+					if (enemies.length < 1) groups.splice(i, 1);
+					this.makeSmallExplosion(obj.x, obj.y);
+					player.obj.depleteShield();
+					this.dropShield();
+				}
 			}
 		}
 	}
@@ -315,12 +354,29 @@ RocketeerController.prototype.moveEnemyGroups = function() {
 
 RocketeerController.prototype.movePowerUps = function() {
 	// console.log('movePowerUps');
+	var player = this.rocketeer.player;
+	var pobj = player.obj;
+	var pe = player.e;
+	var pl = pobj.x;
+	var pt = pobj.y;
+	var pr = pl + pe.width;
+	var pb = pt + pe.height;
 	var ups = this.rocketeer.powerUps;
 	for (var i = ups.length - 1; i >= 0; i--) {
 		var up = ups[i];
-		if (PowerUp.prototype.move(up.obj, up.e) == -1) {
+		var obj = up.obj;
+		var e = up.e;
+		if (PowerUp.prototype.move(obj, e) == -1) {
 			ups.splice(i, 1);
-			View.prototype.removeElement(up.e);
+			this.view.removeElement(e);
+		}
+		else if (!(obj.x > pr || obj.x + e.width < pl || obj.y > pb || obj.y + e.height < pt)) {
+			ups.splice(i, 1);
+			this.view.removeElement(e);
+			PowerUp.prototype.powerUpPlayer(player, up);
+		}
+		else if (this.objectCollidesWithAttack(obj, e)) {
+			this.explodePowerUp(up);
 		}
 	}
 };
@@ -332,7 +388,7 @@ RocketeerController.prototype.movePlayerAttacks = function() {
 		var attack = attacks[i];
 		if (attack.move() == 1) {
 			attacks.splice(i, 1);
-			View.prototype.removeElement(attack.e);
+			this.view.removeElement(attack.e);
 		}
 	}
 };
@@ -344,7 +400,7 @@ RocketeerController.prototype.removeGroups = function() {
 		var group = groups[i];
 		var enemies = group.enemies;
 		for (var j = enemies.length - 1; j >= 0; j--)
-			View.prototype.removeElement(enemies[j].e);
+			this.view.removeElement(enemies[j].e);
 		groups.pop();
 	}
 };
@@ -353,7 +409,7 @@ RocketeerController.prototype.removePowerUps = function() {
 	// console.log('removePowerUps');
 	var powerUps = this.rocketeer.powerUps;
 	for (var i = powerUps.length - 1; i >= 0; i--) {
-		View.prototype.removeElement(powerUps[i].e);
+		this.view.removeElement(powerUps[i].e);
 		powerUps.pop();
 	}
 };
@@ -362,7 +418,7 @@ RocketeerController.prototype.removePlayerAttacks = function() {
 	// console.log('removePowerUps');
 	var playerAttacks = this.playerAttacks;
 	for (var i = playerAttacks.length - 1; i >= 0; i--) {
-		View.prototype.removeElement(playerAttacks[i].e);
+		this.view.removeElement(playerAttacks[i].e);
 		playerAttacks.pop();
 	}
 };
@@ -383,5 +439,131 @@ RocketeerController.prototype.endGame = function() {
 		me.startPlayer();
 		me.view.removeClassName(me.endScreen, 'hide');
 		me.processButtons = me.endMenuButtonProcessor;
-	}, 500);
+	}, 1000);
+};
+
+RocketeerController.prototype.objectCollidesWithAttack = function(obj, e) {
+	// console.log('objectCollidesWithAttack');
+	var attacks = this.playerAttacks;
+	var el = obj.x;
+	var et = obj.y;
+	var er = el + e.width;
+	var eb = et + e.height;
+	for (var i = attacks.length - 1; i >= 0; i--) {
+		var attack = attacks[i];
+		if (!(attack.obj.x > er || attack.obj.x + attack.e.width < el || attack.obj.y > eb || attack.obj.y + attack.e.height < et)) {
+			attacks.splice(i, 1);
+			this.view.removeElement(attack.e);
+			if (attack.attack.explodes)
+			{
+				this.explodeAttack(attack.attack, attack.obj.x, attack.obj.y, this.rocketeer.player.e);
+			}
+			return true;
+		}
+	}
+	return false;
+};
+
+RocketeerController.prototype.enemyCollidesWithAttackExplosion = function(obj, e) {
+	// console.log('enemyCollidesWithAttackExplosion');
+	var explosions = this.attackExplosions;
+	var el = obj.x;
+	var et = obj.y;
+	var er = el + e.width;
+	var eb = et + e.height;
+	for (var i = explosions.length - 1; i >= 0; i--) {
+		var explosion = explosions[i];
+		if (!(explosion.x > er || explosion.x + explosion.e.width < el || explosion.y > eb || explosion.y + explosion.e.height < et)) return true;
+	}
+	return false;
+};
+
+RocketeerController.prototype.explodePowerUp = function(up) {
+	// console.log('explodePowerUp');
+	console.log(up);
+};
+
+RocketeerController.prototype.processExplosions = function() {
+	// console.log('processExplosions');
+	var explosions = this.explosions;
+	for (var i = explosions.length - 1; i >= 0; i--) {
+		var explosion = explosions[i];
+		if (explosion.ticks++ >= explosion.duration) {
+			explosions.splice(i, 1);
+			this.view.removeElement(explosion.e);
+		}
+	}
+	var explosions = this.attackExplosions;
+	for (var i = explosions.length - 1; i >= 0; i--) {
+		var explosion = explosions[i];
+		if (explosion.ticks++ >= explosion.duration) {
+			explosions.splice(i, 1);
+			this.view.removeElement(explosion.e);
+		}
+	}
+};
+
+RocketeerController.prototype.makeSmallExplosion = function(x, y) {
+	// console.log('makeSmallExplosion');
+	var explosion = new Explosion(ContentManager.prototype.getImage('smallExplosion'), x, y);
+	this.explosions.push(explosion);
+	this.view.addGameObject(explosion.e);
+};
+
+RocketeerController.prototype.explodeAttack = function(attack, xi, yi, e) {
+	// console.log('explodeAttack');
+	var img = ContentManager.prototype.getImage('attackExplosion' + attack.level);
+	var x = xi + (e.width / 2) - (img.width / 2);
+	var y = yi + (e.height / 2) - (img.height / 2);
+	var explosion = new Explosion(img, x, y);
+	this.attackExplosions.push(explosion);
+	this.view.addGameObject(explosion.e);
+};
+
+RocketeerController.prototype.getPlayerAttack = function(name) {
+	// console.log('getPlayerAttack');
+	var attacks = this.playerAttacks;
+	for (var i = attacks.length - 1; i >= 0; i--) {
+		var attack = attacks[i];
+		if (attack.attack.name == name) {
+			attacks.splice(i, 1);
+			this.view.removeElement(attack.e);
+			return attack;
+		}
+	}
+	return null;
+};
+
+RocketeerController.prototype.shield = function() {
+	// console.log('shield');
+	if (!this.rocketeer.player.obj.shield(true)) return this.dropShield();
+	var shield = this.shieldE;
+	var player = this.rocketeer.player;
+	var obj = player.obj;
+	var e = player.e;
+	shield.style.left = (obj.x + (e.width / 2) - (shield.width / 2)) + 'px';
+	shield.style.top = (obj.y + (e.height / 2) - (shield.height / 2)) + 'px';
+	this.view.removeClassName(shield, 'hide');
+};
+
+RocketeerController.prototype.dropShield = function() {
+	// console.log('dropShield');
+	this.rocketeer.player.obj.shield(false);
+	this.view.addClassName(this.shieldE, 'hide');
+};
+
+RocketeerController.prototype.tractorBeam = function() {
+	// console.log('tractorBeam');
+};
+
+RocketeerController.prototype.dropTractorBeam = function() {
+	// console.log('dropTractorBeam');
+};
+
+RocketeerController.prototype.discharge = function() {
+	// console.log('discharge');
+	var player = this.rocketeer.player;
+	if (player.obj.discharge()) {
+		this.explodeAttack(player.obj.attacks[3], player.obj.x, player.obj.y, player.e);
+	}
 };
