@@ -159,8 +159,7 @@ RocketeerController.prototype.startPlaying = function() {
 	this.ticksSinceLastGroup = 0;
 	this.ticksToNewGroup = 250;
 	this.ticksSinceLastPowerUp = 0;
-	this.ticksToNewPowerUp = this.FIFTEEN_SECONDS;
-	// this.ticksToNewPowerUp = this.THIRTY_SECONDS;
+	this.ticksToNewPowerUp = this.THIRTY_SECONDS;
 };
 
 RocketeerController.prototype.playingButtonProcessor = function(buttons) {
@@ -267,8 +266,7 @@ RocketeerController.prototype.makePowerUp = function() {
 	// console.log('makePowerUp');
 	this.rocketeer.makePowerUp();
 	this.ticksSinceLastPowerUp = 0;
-	this.ticksToNewPowerUp = Math.floor(Math.random() * this.FIFTEEN_SECONDS);
-	// this.ticksToNewPowerUp = Math.floor(Math.random() * this.FIFTEEN_SECONDS) + this.FIFTEEN_SECONDS;
+	this.ticksToNewPowerUp = Math.floor(Math.random() * this.FIFTEEN_SECONDS) + this.FIFTEEN_SECONDS;
 };
 
 RocketeerController.prototype.shouldUpdate = function() {

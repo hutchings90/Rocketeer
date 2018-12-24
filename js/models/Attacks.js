@@ -91,7 +91,7 @@ Bomb.prototype.setLevel = function(level) {
 
 function Disruptor(level) {
 	// console.log('Disruptor');
-	Attack.call(this, 'Disruptor Beam', 0, 0, level);
+	Attack.call(this, 'Disruptor', 0, 0, level);
 	this.limit = 200;
 	this.state = 'idle';
 }

@@ -4,8 +4,7 @@ PowerUp.prototype.powerUps = [new Mover('bombUp'), new Mover('dischargeUp'), new
 
 PowerUp.prototype.get = function() {
 	// console.log('get');
-	return Object.assign(new Mover(), PowerUp.prototype.powerUps[5]);
-	// return Object.assign(new Mover(), PowerUp.prototype.powerUps[Math.floor(Math.random() * PowerUp.prototype.powerUps.length)]);
+	return Object.assign(new Mover(), PowerUp.prototype.powerUps[Math.floor(Math.random() * PowerUp.prototype.powerUps.length)]);
 };
 
 PowerUp.prototype.move = function(powerUp, e) {
